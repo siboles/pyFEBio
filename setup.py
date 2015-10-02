@@ -7,7 +7,7 @@ from distutils.core import setup
 
 setup(
     name = 'febio',
-    version = '1.0.0',
+    version = '0.1',
     packages = ['febio',],
     py_modules = ['febio.__init__','febio.MatDef','febio.MeshDef','febio.Boundary','febio.Control','febio.Load','febio.Model'],
     author = 'Scott Sibole',
