@@ -8,7 +8,8 @@ To import the module
 <pre><code> import febio </code></pre>
 
 To construct an FEBio model file (.feb) using the classes in this module, do the following:
-1. Define a mesh by either importing an ABAQUS input file (only support for now) or by manually adding element, node, and set definitions:
+
+1. Define a mesh by either importing an ABAQUS input file (only support for now) or by manually adding element, node, and set definitions.
 2. Create a model object.
 3. Create material(s) defintion(s) and sets of elements to assign to.
 4. Add the geometry to the model object.
