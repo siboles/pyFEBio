@@ -4,7 +4,6 @@ Created on 2013-05-15
 @author: Scott Sibole
 '''
 import string
-import h5py
 import numpy as np
 
 class MeshDef(object):
