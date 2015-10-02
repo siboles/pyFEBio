@@ -16,10 +16,10 @@ To construct an FEBio model file (.feb) using the classes in this module, do the
 5. Add load curves to control loading and prescribed boundary conditions.
 6. Create boundary conditions, loads, constraints, and contact defitions.
 7. Add boundary condition, load, constraint, and contact objects to model object.
-10. Create a control object.
-11. Set the attributes of the control object you wish to modify from default.
-12. Add the control object to model object.
-13. Write the model to disk.
+8. Create a control object.
+9. Set the attributes of the control object you wish to modify from default.
+10. Add the control object to model object.
+11. Write the model to disk.
 
 ## Example Scripts ##
 * febio/verification/body_force.py - static analysis of gravity body force

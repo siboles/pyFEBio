@@ -14,6 +14,7 @@ setup(
     author_email = 'ssibole@kin.ucalgary.ca',
     license = 'MIT',
     package_data = {'febio': ['verification/*'],},
-    download_url = 'https://github.com/siboles/',
+    url = 'https:/github.com/siboles/pyFEBio',
+    download_url = 'https://github.com/siboles/pyFEBio/tarball/0.1',
     description = 'A Python API for FEBio',
 )
