@@ -1,5 +1,6 @@
 import numpy as np
 import os, re
+from collections import OrderedDict
 
 class FebPlt(object):
     '''
@@ -89,8 +90,8 @@ class FebPlt(object):
         self.STATE_SECTION = []
 
         self.TIME = []
-        self.ElementData = {}
-        self.NodeData = {}
+        self.ElementData = OrderedDict()
+        self.NodeData = OrderedDict()
 
         self._parseModel()
         self._cleanData()
