@@ -1,11 +1,11 @@
 package:
   name: febio
-  version: "0.1"
+  version: "0.1.3"
 
 source:
-  fn: febio-0.1.tar.gz
-  url: https://files.pythonhosted.org/packages/ba/4e/9c242acc588aab465df03ea7794485d401566ef6d76e1ce435f89ab73156/febio-0.1.tar.gz
-  md5: b9737f467808477051454dd211ea01a9
+  fn: febio-0.1.3.tar.gz
+  url: https://files.pythonhosted.org/packages/90/7a/64618af15752345a1d5a6a2cbdf87b3f18fb87c123ab98c0677681f73730/febio-0.1.3.tar.gz
+  md5: 889f1140b2eb33cb829eafff49b7c5c0
 #  patches:
    # List any patch files here
    # - fix.patch
@@ -30,11 +30,10 @@ requirements:
   build:
     - python
     - numpy
-    - h5py
+
   run:
     - python
     - numpy
-    - h5py
 
 test:
   # Python imports
@@ -54,7 +53,7 @@ test:
     # - nose
 
 about:
-  home: https:/github.com/siboles/pyFEBio
+  home: https://github.com/siboles/pyFEBio
   license: MIT
   summary: 'A Python API for FEBio'
 
