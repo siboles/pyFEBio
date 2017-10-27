@@ -3,7 +3,13 @@ Created on 2013-05-15
 
 @author: Scott Sibole
 '''
-import string
+from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import map
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import numpy as np
 
 class MeshDef(object):
@@ -20,7 +26,7 @@ class MeshDef(object):
         self.mformat = mformat
         self.elements = []
         self.nodes = []
-        self.scale = map(float,scale)
+        self.scale = list(map(float,scale))
         self.elsets = {}
         self.nsets = {}
         self.fsets = {}
@@ -31,9 +37,8 @@ class MeshDef(object):
         
     def parseMesh(self):
         if self.mformat.lower() == 'abq':
-            fid = open(self.mfile,'r')
-            lines = map(string.rstrip,fid.readlines())
-            fid.close()
+            with open(self.mfile) as f:
+                lines = [line.strip() for line in f]
             content = {}
             kywd =''
             kywds = []
@@ -54,17 +59,17 @@ class MeshDef(object):
                         content[kywd] = []
                         kywds.append(kywd)
                         continue
-                dmy = line.split(',')
+                dmy = [d.lower() for d in line.split(',')]
                 try:
                     dmy.remove('')
                 except:
                     pass
-                content[kywd].append(map(string.lower,dmy))
+                content[kywd].append(dmy)
                 
             for i in kywds:
                 if 'node' in i:
                     for n in content[i]:
-                        self.nodes.append([int(n[0])]+self.__scaleNode(map(float,n[1:])))
+                        self.nodes.append([int(n[0])]+self.__scaleNode(list(map(float,n[1:]))))
                 elif 'element' in i:
                     dmy = i.partition('type=')[-1]
                     if 'c3d8' in dmy:
@@ -78,10 +83,10 @@ class MeshDef(object):
                     elif 'cpe4' in dmy:
                         etype = 'quad4'
                     else:
-                        print "WARNING: Element type "+dmy+" is not supported. This section will be ignored..."
+                        print("WARNING: Element type "+dmy+" is not supported. This section will be ignored...")
                         continue
                     for e in content[i]:
-                        self.elements.append([etype]+map(int,e))
+                        self.elements.append([etype]+list(map(int,e)))
                 elif 'elset' in i:
                     setname = i.partition('=')[-1]
                     self.elsets[setname] = {}
@@ -108,7 +113,7 @@ class MeshDef(object):
                         try:
                             elm = self.elements[eid-1]
                         except:
-                            print eid-1
+                            print(eid-1)
                         node_order = face_def[elm[0]][line[1]][1:]
                         stype = face_def[elm[0]][line[1]][0]
                         dmy = [stype,MeshDef.facetID]
@@ -117,17 +122,17 @@ class MeshDef(object):
                         self.fsets[setname].append(dmy)
                         MeshDef.facetID += 1
                 else:
-                    print 'Mesh parser ignored keyword line: '+i
+                    print('Mesh parser ignored keyword line: '+i)
                     
         elif self.mformat.lower() == 'hdf5':
             pass
         
     def addElementSet(self,setname=None,eids=None):
         if setname is None:
-            print "WARNING: Must provide a setname. Skipping set generation..."
+            print("WARNING: Must provide a setname. Skipping set generation...")
             pass
         if eids is None:
-            print "WARNING: Did not specify any element IDs.  Skipping set generation..."
+            print("WARNING: Did not specify any element IDs.  Skipping set generation...")
             pass
         
         self.elsets[setname] = {}
@@ -144,7 +149,7 @@ class MeshDef(object):
         lastelm = self.elements[-1][1]
         lastnode = self.nodes[-1][0]
         elm = [etype,lastelm+1]
-        for i in xrange(len(corners)/3):
+        for i in range(old_div(len(corners),3)):
             elm.append(lastnode+1+i)
             
         self.elements.append(elm)
@@ -153,7 +158,7 @@ class MeshDef(object):
         
         cnt = 1
         self.nsets['n'+name] = []
-        for i in xrange(0,len(corners),3):
+        for i in range(0,len(corners),3):
             self.nodes.append([lastnode+cnt, corners[i], corners[i+1], corners[i+2]])
             self.nsets['n'+name].append(lastnode+cnt)
             cnt += 1

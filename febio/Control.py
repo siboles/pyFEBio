@@ -3,7 +3,7 @@ Created on 2013-05-15
 
 @author: Scott Sibole
 '''
-import string
+from builtins import object
 
 class Control(object):
     '''
@@ -36,8 +36,5 @@ class Control(object):
                            'integration': None
                            }
     def setAttributes(self,specified):
-        for i in specified.keys():
-            self.attributes[string.lower(i)] = specified[i]
-            
-            
-        
+        for i in list(specified.keys()):
+            self.attributes[i.lower()] = specified[i]

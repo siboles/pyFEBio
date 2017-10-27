@@ -96,10 +96,10 @@
   </Boundary>
   <Constraints>
     <rigid_body mat="4">
-      <rot_z type="fixed" />
       <trans_z type="fixed" />
       <rot_x type="fixed" />
       <rot_y type="fixed" />
+      <rot_z type="fixed" />
     </rigid_body>
   </Constraints>
   <Step name="Displace">
@@ -131,28 +131,28 @@
     <Loads />
     <Constraints />
     <Control>
-      <rtol>0</rtol>
-      <max_ups>10</max_ups>
       <title>example</title>
       <time_steps>10</time_steps>
-      <min_residual>1e-20</min_residual>
-      <analysis type="static" />
+      <step_size>0.1</step_size>
+      <dtol>0.001</dtol>
+      <etol>0.01</etol>
+      <rtol>0</rtol>
       <lstol>0.9</lstol>
       <time_stepper>
         <dtmin>0.01</dtmin>
+        <dtmax>1</dtmax>
         <max_retries>10</max_retries>
         <opt_iter>10</opt_iter>
-        <dtmax>1</dtmax>
       </time_stepper>
-      <etol>0.01</etol>
-      <step_size>0.1</step_size>
-      <print_level>PRINT_MINOR_ITRS</print_level>
       <max_refs>15</max_refs>
-      <plot_level>PLOT_MAJOR_ITRS</plot_level>
+      <max_ups>10</max_ups>
       <optimize_bw>0</optimize_bw>
-      <cmax>1e5</cmax>
-      <dtol>0.001</dtol>
       <restart>0</restart>
+      <plot_level>PLOT_MAJOR_ITRS</plot_level>
+      <cmax>1e5</cmax>
+      <analysis type="static" />
+      <print_level>PRINT_MINOR_ITRS</print_level>
+      <min_residual>1e-20</min_residual>
     </Control>
   </Step>
   <LoadData>

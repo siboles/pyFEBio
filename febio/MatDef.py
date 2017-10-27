@@ -3,6 +3,8 @@ Created on 2013-05-15
 
 @author: Scott Sibole
 '''
+from __future__ import print_function
+from builtins import object
 
 class MatDef(object):
     '''
@@ -19,7 +21,7 @@ class MatDef(object):
         mname = material name
         '''
         if not matid:
-            print "ERROR: You must specify a material id! Terminating execution..."
+            print("ERROR: You must specify a material id! Terminating execution...")
             raise SystemExit
         self.attributes = attributes
         self.matid = matid

@@ -1,5 +1,11 @@
+from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import numpy as np
-import os, re
+import os
 from collections import OrderedDict
 
 class FebPlt(object):
@@ -96,19 +102,22 @@ class FebPlt(object):
         self._parseModel()
         self._cleanData()
 
+    def _asHexString(self, x):
+        return "{:08x}".format(x)
+
     def _parseModel(self):
         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
-        if '%08x' % chunk != '00464542':
-            print 'File passed to FebPlt() is not an FEBio xplt. Exiting...'
+        if self._asHexString(chunk[0]) != '00464542':
+            print('File passed to FebPlt() is not an FEBio xplt. Exiting...')
             raise SystemExit
         self._read_size += 4
         while self._read_size < self._filesize:
             chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
             self._read_size += 4
             try:
-                keyword = self._lookup['%08x' % chunk]
+                keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'VERSION':
-                    self.VERSION = '%08x' % np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.VERSION = self._asHexString(np.fromfile(self._fid,dtype=np.uint32,count=2)[-1])
                     self._read_size += 8
                 elif keyword == 'NODES':
                     self.NODES = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
@@ -120,7 +129,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword in ['GLOBAL_DATA','MATERIAL_DATA','NODESET_DATA','DOMAIN_DATA','SURFACE_DATA']:
                                 self._readDictSect(np.fromfile(self._fid,dtype=np.uint32,count=1)+self._read_size,keyword)
                         except:
@@ -133,7 +142,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'MAT_ID':
                                 self.MATERIAL[-1]['MAT_ID'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
                                 self._read_size += 8
@@ -155,7 +164,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'NODE_COORDS':
                                 np.fromfile(self._fid,dtype=np.uint32,count=1)
                                 self._read_size += 4
@@ -171,7 +180,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'DOMAIN':
                                 self._readDomain(np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size)
                         except:
@@ -183,7 +192,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'SURFACE':
                                 self._readSurface(np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size)
                         except:
@@ -197,7 +206,7 @@ class FebPlt(object):
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
-                            keyword = self._lookup['%08x' % chunk]
+                            keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'TIME':
                                 self.STATE_SECTION[-1]['TIME'] = np.fromfile(self._fid,dtype=np.float32,count=2)[1]
                                 self.TIME.append(self.STATE_SECTION[-1]['TIME'])
@@ -209,7 +218,7 @@ class FebPlt(object):
                                     chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]
                                     self._read_size += 4
                                     try:
-                                        subkeyword = self._lookup['%08x' % chunk]
+                                        subkeyword = self._lookup[self._asHexString(chunk)]
                                         if subkeyword == 'VARIABLE_ID':
                                             self._addStateData(keyword)
                                             self.STATE_SECTION[-1][keyword][-1]['VARIABLE_ID'].append(np.fromfile(self._fid,dtype=np.uint32,count=2)[-1])
@@ -223,7 +232,7 @@ class FebPlt(object):
                                                 region_size = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]
                                                 self._read_size += 8
                                                 self.STATE_SECTION[-1][keyword][-1]['DATA'].append({'REGION_ID': region_id, 
-                                                    'DATA': np.reshape(np.fromfile(self._fid,dtype=np.float32,count=region_size/4),(-1,vlengths[itype]))})
+                                                    'DATA': np.reshape(np.fromfile(self._fid,dtype=np.float32,count=old_div(region_size,4)),(-1,vlengths[itype]))})
                                                 self._read_size += region_size
                                     except:
                                         continue
@@ -241,7 +250,7 @@ class FebPlt(object):
             chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
             self._read_size += 4
             try:
-                keyword = self._lookup['%08x' % chunk]
+                keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'DICTIONARY_ITEM':
                     self._addDictionaryItem(key)
                 elif keyword == 'ITEM_TYPE':
@@ -253,12 +262,18 @@ class FebPlt(object):
                 elif keyword == 'ITEM_NAME':
                     np.fromfile(self._fid,dtype=np.uint32,count=1) #read a 4 byte chunk to move to char64 array
                     self._read_size += 4
-                    dmy = np.fromfile(self._fid,dtype=np.dtype((str,64)),count=1)
-                    z = re.compile(r'(\x00)')
-                    dmy = z.split(dmy[0])
+                    word = ''
+                    c = 0
+                    while c<64:
+                        dmy = np.fromfile(self._fid, dtype='|S1', count=1)[0]
+                        c += 1
+                        if dmy != b'':
+                            word = ''.join([word, dmy.decode('ascii')])
+                        else:
+                            np.fromfile(self._fid, dtype='|S1', count=64-c)
+                            break
                     self._read_size += 64
-                    dmy = str(dmy[0])
-                    self.DICTIONARY[key][-1]['ITEM_NAME'] = dmy
+                    self.DICTIONARY[key][-1]['ITEM_NAME'] = word
             except:
                 continue
 
@@ -271,7 +286,7 @@ class FebPlt(object):
             chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
             self._read_size += 4
             try:
-                keyword = self._lookup['%08x' % chunk]
+                keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'ELEM_TYPE':
                     etype = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
                     self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['ELEM_TYPE'] = elmtypes[etype]
@@ -295,7 +310,7 @@ class FebPlt(object):
             chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
             self._read_size += 4
             try:
-                keyword = self._lookup['%08x' % chunk]
+                keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'SURFACE_ID':
                     self.SURFACE_SECTION[-1]['SURFACE_HEADER']['SURFACE_ID'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
                     self._read_size += 8
@@ -345,8 +360,8 @@ class FebPlt(object):
                         used_node[n] = True
                     mapping[-1]['MULT'].append(n)
         N = len(self.STATE_SECTION)
-        for i in xrange(N):
-            for j in xrange(len(self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'])):
+        for i in range(N):
+            for j in range(len(self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'])):
                 try:
                     self.NodeData[j+1]['displacement'][i,:] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
                 except:
@@ -354,15 +369,15 @@ class FebPlt(object):
                     self.NodeData[j+1]['displacement'] = np.zeros((N,3),dtype=np.float32)
                     self.NodeData[j+1]['displacement'][i,:] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
 
-            for j in xrange(len(self.STATE_SECTION[i]['DOMAIN_DATA'])):
+            for j in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'])):
                 vname = self.DICTIONARY['DOMAIN_DATA'][j]['ITEM_NAME']
                 vformat = self.DICTIONARY['DOMAIN_DATA'][j]['ITEM_FORMAT']
                 if vformat == 'ITEM':
-                    for k in xrange(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
+                    for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
                         dat = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['DATA']
                         m = mapping[k][vformat]
                         M,L = dat.shape    #rows in dat
-                        for l in xrange(M):
+                        for l in range(M):
                             try:
                                 self.ElementData[m[l]][vname][i,:] = dat[l,:]
                             except:
@@ -373,11 +388,11 @@ class FebPlt(object):
                                     self.ElementData[m[l]][vname] = np.zeros((N,L),dtype=np.float32)
                                 self.ElementData[m[l]][vname][i,:] =  dat[l,:]
                 elif vformat == 'NODE':
-                    for k in xrange(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
+                    for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
                         dat = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['DATA']
                         m = mapping[k][vformat]
                         M,L = dat.shape    #rows in dat
-                        for l in xrange(M):
+                        for l in range(M):
                             n = m[l]+1
                             try:
                                 self.NodeData[n][vname][i,:] = dat[l,:]
@@ -390,11 +405,11 @@ class FebPlt(object):
                                 self.NodeData[n][vname][i,:] =  dat[l,:]
                 elif vformat == 'MULT':
                     accessed = {}
-                    for k in xrange(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
+                    for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
                         dat = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['DATA']
                         m = mapping[k][vformat]
                         M,L = dat.shape    #rows in dat
-                        for l in xrange(M):
+                        for l in range(M):
                             n = m[l]+1
                             try:
                                 self.NodeData[n][vname][i,:] = self.NodeData[n][vname][i,:] + dat[l,:]
@@ -410,9 +425,9 @@ class FebPlt(object):
                                     self.NodeData[n][vname] = np.zeros((N,L),dtype=np.float32)
                                 self.NodeData[n][vname][i,:] = self.NodeData[n][vname][i,:] + dat[l,:]
                                 accessed[n] = 1
-                    for nid in self.NodeData.keys():
+                    for nid in list(self.NodeData.keys()):
                         try:
-                            self.NodeData[nid][vname][i,:] = self.NodeData[nid][vname][i,:]/accessed[nid]
+                            self.NodeData[nid][vname][i,:] = old_div(self.NodeData[nid][vname][i,:],accessed[nid])
                         except:
                             continue
                     

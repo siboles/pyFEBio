@@ -3,6 +3,9 @@ Created on 2013-05-15
 
 @author: Scott Sibole
 '''
+from __future__ import print_function
+from builtins import range
+from builtins import object
 
 class Boundary(object):
     '''
@@ -23,16 +26,16 @@ class Boundary(object):
             spring - list with each entry containing a 6 element list of: type, node 1, node 2, E, force load curve id, scale
         '''
         self.bcs = []
-        for _ in xrange(steps):
+        for _ in range(steps):
             self.bcs.append({'fixed': [], 'prescribed': [], 'prescribed relative': [], 'contact': [],'spring': []})
         
     def addFixed(self,nset=None,nodeid=None,dof=None):        
         if dof is None:
-            print 'WARNING: No degree of freedom was specified for this boundary condition.  Skipping...'
+            print('WARNING: No degree of freedom was specified for this boundary condition.  Skipping...')
             pass
         
         if nset is None and nodeid is None:
-            print 'WARNING: Must specify either a node set or a node id.  Skipping...'
+            print('WARNING: Must specify either a node set or a node id.  Skipping...')
             pass
             
         if nset is not None:
@@ -49,19 +52,19 @@ class Boundary(object):
     
     def addPrescribed(self,nset=None,step=0,nodeid=None,dof=None,lc=None,scale=None,ptype=None):
         if dof is None:
-            print 'WARNING: No degree of freedom was specified for this boundary condition.  Skipping BC assignment...'
+            print('WARNING: No degree of freedom was specified for this boundary condition.  Skipping BC assignment...')
             pass
         
         if nset is None and nodeid is None:
-            print 'WARNING: Must specify either a node set or a node id.  Skipping BC assignment...'
+            print('WARNING: Must specify either a node set or a node id.  Skipping BC assignment...')
             pass
         
         if lc is None:
-            print 'WARNING: Must specify a load curve ID. Skipping BC assignment...'
+            print('WARNING: Must specify a load curve ID. Skipping BC assignment...')
             pass
         
         if scale is None:
-            print 'WARNING: No scale specified for this boundary condition.  Using default of 1.0...'
+            print('WARNING: No scale specified for this boundary condition.  Using default of 1.0...')
             scale = 1.0
         if ptype is not None:
             keywd = 'prescribed relative'
@@ -81,11 +84,11 @@ class Boundary(object):
     
     def addContact(self,step=0,ctype=None,master=None,slave=None,attributes=None):
         if ctype is None:
-            print 'WARNING: Did not specify a contact type. Skipping assignment...'
+            print('WARNING: Did not specify a contact type. Skipping assignment...')
             pass
         
         elif master is None or slave is None:
-            print 'WARNING: Did not specify an appropriate value for the master and/or slave.  Skipping assignment...'
+            print('WARNING: Did not specify an appropriate value for the master and/or slave.  Skipping assignment...')
             pass
         try:
             if isinstance(master[0][0],list):
@@ -109,17 +112,17 @@ class Boundary(object):
         
     def addSpring(self,step=0,stype='linear',nodes=[None,None],E=None,lc=None,scale=1.0):
         if len(nodes) != 2 or not isinstance(nodes[0],int) or not isinstance(nodes[1],int):
-            print 'WARNING: List of nodes must be 2 integer elements.  Skipping spring definition...'
+            print('WARNING: List of nodes must be 2 integer elements.  Skipping spring definition...')
             pass
         if stype=='linear' or stype=='tension-only nonlinear':
             if E is None:
-                print 'WARNING: Must specify a spring stiffness if type is linear or tension-only linear.  Skipping spring definition...'
+                print('WARNING: Must specify a spring stiffness if type is linear or tension-only linear.  Skipping spring definition...')
                 pass
         if stype=='nonlinear' and lc is None:
-            print 'WARNING: Must specify a force load curve if type is nonlinear.  Skipping spring definition...'
+            print('WARNING: Must specify a force load curve if type is nonlinear.  Skipping spring definition...')
             pass
         if stype=='nonlinear' and scale is None:
-            print 'WARNING: No scale was specified.  Using default value of 1.0...'
+            print('WARNING: No scale was specified.  Using default value of 1.0...')
             scale = 1.0 
         
         self.bcs[step]['spring'].append({'stype':stype,'n1':nodes[0],'n2':nodes[1],'E':E,'lc':lc,'scale':scale})
