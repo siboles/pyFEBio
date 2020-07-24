@@ -54,7 +54,7 @@ model.addControl(ctrl,step=0)
 boundary = febio.Boundary(steps=1)
 boundary.addFixed(nset=mesh.nsets['nxp'],dof='xyz')
 boundary.addPrescribed(step=0,nset=mesh.nsets['nxm'],dof='x',lc='1',scale='0.1')
-boundary.addContact(step=0,ctype='rigid',master=4,slave=mesh.nsets['nzm'])
+boundary.addContact(step=0,ctype='rigid',main=4,subordinate=mesh.nsets['nzm'])
 
 #Add rigid body constraint
 model.addConstraint(matid=4,dof={'trans_z': 'fixed','rot_x': 'fixed','rot_y': 'fixed','rot_z': 'fixed'})

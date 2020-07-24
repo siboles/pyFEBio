@@ -233,19 +233,19 @@ class Model(object):
                             for a in list(c['attributes'].keys()):
                                 ET.SubElement(self.contactblk[cnt],a).text = c['attributes'][a]
                         if c['type']=='rigid':
-                            for n in c['slave']:
-                                ET.SubElement(self.contactblk[cnt],"node",id=str(n),rb=str(c['master']))
+                            for n in c['subordinate']:
+                                ET.SubElement(self.contactblk[cnt],"node",id=str(n),rb=str(c['main']))
                         elif 'sliding' in c['type'] or 'tied' in c['type'] or 'periodic' in c['type']:
-                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="master")
-                            for f in c['master']:
+                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="main")
+                            for f in c['main']:
                                 ET.SubElement(dmy,f[0],id=str(f[1])).text = ",".join(list(map(str,f[2:])))
-                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="slave")
-                            for f in c['slave']:
+                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="subordinate")
+                            for f in c['subordinate']:
                                 ET.SubElement(dmy,f[0],id=str(f[1])).text = ",".join(list(map(str,f[2:])))
                         elif c['type']=='rigid_wall':
-                            ET.SubElement(self.contactblk[-1],"plane",lc=str(c['master'][0])).text = ",".join(list(map(str,c['master'][1:])))
-                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="slave")
-                            for f in c['slave']:
+                            ET.SubElement(self.contactblk[-1],"plane",lc=str(c['main'][0])).text = ",".join(list(map(str,c['main'][1:])))
+                            dmy = ET.SubElement(self.contactblk[cnt],"surface",type="subordinate")
+                            for f in c['subordinate']:
                                 ET.SubElement(dmy,f[0],id=str(f[1])).text = ",".join(list(map(str,f[2:])))
                         cnt += 1
                 if len(step['spring']) > 0:

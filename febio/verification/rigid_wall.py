@@ -24,7 +24,7 @@ model.addLoadCurve(lc='1',lctype='linear',points=[0,0,1,.1])
 boundary = febio.Boundary(steps=1)
 
 #add a rigid_wall contact interface to boudary object
-boundary.addContact(step=0,ctype='rigid_wall',master=['1','0','0','1','0'],slave=mesh.fsets['fzm'],attributes={'penalty': '1000.0'})
+boundary.addContact(step=0,ctype='rigid_wall',main=['1','0','0','1','0'],subordinate=mesh.fsets['fzm'],attributes={'penalty': '1000.0'})
 
 #add a fixed boundary condition to nodes of top z face
 boundary.addFixed(nset=mesh.nsets['nzp'],dof='xyz')

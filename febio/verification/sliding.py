@@ -33,7 +33,7 @@ model.addLoadCurve(lc='1',lctype='linear',points=[0,0,1,1])
 boundary = febio.Boundary(steps=1)
 
 #add a rigid contact interface to boundary object
-boundary.addContact(step=0,ctype='facet-to-facet sliding',master=mesh.fsets['fplane'],slave=mesh.fsets['fzp'],attributes={'penalty':'1000.0'})
+boundary.addContact(step=0,ctype='facet-to-facet sliding',main=mesh.fsets['fplane'],subordinate=mesh.fsets['fzp'],attributes={'penalty':'1000.0'})
 
 #add a fixed boundary condition to nodes of top z face
 boundary.addFixed(nset=mesh.nsets['nzm'],dof='xyz')

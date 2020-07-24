@@ -20,8 +20,8 @@ class Boundary(object):
             prescribed relative - same as prescribed but has type relative (relative BCs have to have a separate XML parent)
             contact - list containing a dictionaries each containing
                 ctype - 'sliding_with_gaps', 'facet-to-facet sliding', 'sliding2', 'sliding3', 'rigid', 'rigid_wall', 'tied', 'tied-biphasic', 'sliding-tension-compression'
-                master - master node or surface set (MeshDef.nset or MeshDef.fset attribute) OR if rigid: the rigid body id; if rigid_wall: the plane equation
-                slave - slave node or surface set
+                main - main node or surface set (MeshDef.nset or MeshDef.fset attribute) OR if rigid: the rigid body id; if rigid_wall: the plane equation
+                subordinate - subordinate node or surface set
                 attributes - any attributes that should be specified: pass as a dictionary {attribute tag: value}
             spring - list with each entry containing a 6 element list of: type, node 1, node 2, E, force load curve id, scale
         '''
@@ -82,33 +82,33 @@ class Boundary(object):
             else:
                 self.bcs[step][keywd].append([nodeid,dof,lc,scale])
     
-    def addContact(self,step=0,ctype=None,master=None,slave=None,attributes=None):
+    def addContact(self,step=0,ctype=None,main=None,subordinate=None,attributes=None):
         if ctype is None:
             print('WARNING: Did not specify a contact type. Skipping assignment...')
             pass
         
-        elif master is None or slave is None:
-            print('WARNING: Did not specify an appropriate value for the master and/or slave.  Skipping assignment...')
+        elif main is None or subordinate is None:
+            print('WARNING: Did not specify an appropriate value for the main and/or subordinate.  Skipping assignment...')
             pass
         try:
-            if isinstance(master[0][0],list):
+            if isinstance(main[0][0],list):
                 dmy = []
-                for i in master:
+                for i in main:
                     for j in i:
                         dmy.append(j)
-                master = dmy
+                main = dmy
         except:
-            master = master
+            main = main
         try:
-            if isinstance(slave[0][0],list):
+            if isinstance(subordinate[0][0],list):
                 dmy = []
-                for i in slave:
+                for i in subordinate:
                     for j in i:
                         dmy.append(j)
-                slave = dmy
+                subordinate = dmy
         except:
-            slave = slave
-        self.bcs[step]['contact'].append({'type': ctype, 'master': master, 'slave': slave, 'attributes': attributes})    
+            subordinate = subordinate
+        self.bcs[step]['contact'].append({'type': ctype, 'main': main, 'subordinate': subordinate, 'attributes': attributes})    
         
     def addSpring(self,step=0,stype='linear',nodes=[None,None],E=None,lc=None,scale=1.0):
         if len(nodes) != 2 or not isinstance(nodes[0],int) or not isinstance(nodes[1],int):
