@@ -1,12 +1,13 @@
 from __future__ import print_function
 from __future__ import division
+import os
 from builtins import str
 from builtins import range
 from builtins import object
 from past.utils import old_div
 import numpy as np
-import os
 from collections import OrderedDict
+
 
 class FebPlt(object):
     '''
@@ -35,60 +36,60 @@ class FebPlt(object):
             similar to the original plot file.  This will be documented in
             the future.
     '''
-    def __init__(self,filename):
-        self._fid = open(filename,'rb')
+    def __init__(self, filename):
+        self._fid = open(filename, 'rb')
         self._filesize = os.path.getsize(filename)
         self._read_size = 0
         self._matnames = {}
         self._lookup = {'01010001': 'VERSION',
-                '01010002':'NODES',
-                '01020000':'DICTIONARY', 
-                '01021000':'GLOBAL_DATA',
-                '01022000': 'MATERIAL_DATA',
-                '01023000': 'NODESET_DATA',
-                '01024000': 'DOMAIN_DATA',
-                '01025000': 'SURFACE_DATA',
-                '01020001': 'DICTIONARY_ITEM',
-                '01020002': 'ITEM_TYPE',
-                '01020003': 'ITEM_FORMAT',
-                '01020004': 'ITEM_NAME',
-                '01030001': 'MATERIAL',
-                '01030002': 'MAT_ID',
-                '01030003': 'MAT_NAME',
-                '01041000': 'NODE_SECTION',
-                '01041001': 'NODE_COORDS',
-                '01042000': 'DOMAIN_SECTION',
-                '01042100': 'DOMAIN',
-                '01042101': 'DOMAIN_HEADER',
-                '01042102': 'ELEM_TYPE',
-                '01042103': 'MAT_ID',
-                '01032104': 'ELEMENTS',
-                '01042200': 'ELEMENT_LIST',
-                '01042201': 'ELEMENT',
-                '01043000': 'SURFACE_SECTION',
-                '01043102': 'SURFACE_ID',
-                '01043103': 'FACETS',
-                '01043201': 'FACET',
-                '02000000': 'STATE_SECTION',
-                '02010000': 'STATE_HEADER',
-                '02010002': 'TIME',
-                '02020000': 'STATE_DATA',
-                '02020001': 'STATE_VAR',
-                '02020002': 'VARIABLE_ID',
-                '02020003': 'VARIABLE_DATA',
-                '02020100': 'GLOBAL_DATA',
-                '02020200': 'MATERIAL_DATA',
-                '02020300': 'NODESET_DATA',
-                '02020400': 'DOMAIN_DATA',
-                '02020500': 'SURFACE_DATA'
-                }
+                        '01010002': 'NODES',
+                        '01020000': 'DICTIONARY', 
+                        '01021000': 'GLOBAL_DATA',
+                        '01022000': 'MATERIAL_DATA',
+                        '01023000': 'NODESET_DATA',
+                        '01024000': 'DOMAIN_DATA',
+                        '01025000': 'SURFACE_DATA',
+                        '01020001': 'DICTIONARY_ITEM',
+                        '01020002': 'ITEM_TYPE',
+                        '01020003': 'ITEM_FORMAT',
+                        '01020004': 'ITEM_NAME',
+                        '01030001': 'MATERIAL',
+                        '01030002': 'MAT_ID',
+                        '01030003': 'MAT_NAME',
+                        '01041000': 'NODE_SECTION',
+                        '01041001': 'NODE_COORDS',
+                        '01042000': 'DOMAIN_SECTION',
+                        '01042100': 'DOMAIN',
+                        '01042101': 'DOMAIN_HEADER',
+                        '01042102': 'ELEM_TYPE',
+                        '01042103': 'MAT_ID',
+                        '01032104': 'ELEMENTS',
+                        '01042200': 'ELEMENT_LIST',
+                        '01042201': 'ELEMENT',
+                        '01043000': 'SURFACE_SECTION',
+                        '01043102': 'SURFACE_ID',
+                        '01043103': 'FACETS',
+                        '01043201': 'FACET',
+                        '02000000': 'STATE_SECTION',
+                        '02010000': 'STATE_HEADER',
+                        '02010002': 'TIME',
+                        '02020000': 'STATE_DATA',
+                        '02020001': 'STATE_VAR',
+                        '02020002': 'VARIABLE_ID',
+                        '02020003': 'VARIABLE_DATA',
+                        '02020100': 'GLOBAL_DATA',
+                        '02020200': 'MATERIAL_DATA',
+                        '02020300': 'NODESET_DATA',
+                        '02020400': 'DOMAIN_DATA',
+                        '02020500': 'SURFACE_DATA',
+                        }
         self.VERSION = None
         self.NODES = None
-        self.DICTIONARY = {'GLOBAL_DATA': [], 
-                        'MATERIAL_DATA':  [],
-                        'NODESET_DATA':  [],
-                        'DOMAIN_DATA':  [],
-                        'SURFACE_DATA':  []}
+        self.DICTIONARY = {'GLOBAL_DATA': [],
+                           'MATERIAL_DATA':  [],
+                           'NODESET_DATA':  [],
+                           'DOMAIN_DATA':  [],
+                           'SURFACE_DATA':  []}
         self.MATERIAL = []
         self.NODE_SECTION = None
         self.DOMAIN_SECTION = []
@@ -117,29 +118,33 @@ class FebPlt(object):
             try:
                 keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'VERSION':
-                    self.VERSION = self._asHexString(np.fromfile(self._fid,dtype=np.uint32,count=2)[-1])
+                    self.VERSION = self._asHexString(np.fromfile(self._fid, dtype=np.uint32, count=2)[-1])
                     self._read_size += 8
                 elif keyword == 'NODES':
-                    self.NODES = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.NODES = np.fromfile(self._fid, dtype=np.uint32, count=2)[-1]
                     self._read_size += 8
                 elif keyword == 'DICTIONARY':
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     while self._read_size < chunksize:
                         chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
-                            if keyword in ['GLOBAL_DATA','MATERIAL_DATA','NODESET_DATA','DOMAIN_DATA','SURFACE_DATA']:
-                                self._readDictSect(np.fromfile(self._fid,dtype=np.uint32,count=1)+self._read_size,keyword)
+                            if keyword in ['GLOBAL_DATA',
+                                           'MATERIAL_DATA',
+                                           'NODESET_DATA',
+                                           'DOMAIN_DATA',
+                                           'SURFACE_DATA']:
+                                self._readDictSect(np.fromfile(self._fid, dtype=np.uint32, count=1) + self._read_size, keyword)
                         except:
                             continue
                 elif keyword == 'MATERIAL':
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     self._addMaterial()
                     while self._read_size < chunksize:
-                        chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+                        chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
@@ -149,90 +154,101 @@ class FebPlt(object):
                             elif keyword == 'MAT_NAME':
                                 np.fromfile(self._fid,dtype=np.uint32,count=1)
                                 self._read_size += 4
-                                mname = np.fromfile(self._fid,dtype=np.dtype((str,64)),count=1)
+                                mname = ''
+                                c = 0
+                                while c < 64:
+                                    dmy = np.fromfile(self._fid, dtype='|S1', count=1)[0]
+                                    c += 1
+                                    if dmy != b'':
+                                        mname = ''.join([mname, dmy.decode('ascii')])
+                                    else:
+                                        np.fromfile(self._fid, dtype='|S1', count=64-c)
+                                        break
                                 self._read_size += 64
-                                z = re.compile(r'(\x00)')
-                                mname = str(z.split(mname[0])[0])
                                 self.MATERIAL[-1]['MAT_NAME'] = mname
                                 self._matnames[mname] = self.MATERIAL[-1]['MAT_ID']
                         except:
                             continue
                 elif keyword == 'NODE_SECTION':
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid,dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     while self._read_size < chunksize:
-                        chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+                        chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'NODE_COORDS':
-                                np.fromfile(self._fid,dtype=np.uint32,count=1)
+                                np.fromfile(self._fid, dtype=np.uint32, count=1)
                                 self._read_size += 4
                                 N = self.NODES
-                                self.NODE_SECTION = np.reshape(np.fromfile(self._fid,dtype=np.float32,count=3*N),(N,3))
-                                self._read_size += 12*N
+                                self.NODE_SECTION = np.reshape(np.fromfile(self._fid, dtype=np.float32, count=3 * N), (N,3))
+                                self._read_size += 12 * N
                         except:
                             continue
                 elif keyword == 'DOMAIN_SECTION':
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     while self._read_size < chunksize:
-                        chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+                        chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'DOMAIN':
-                                self._readDomain(np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size)
+                                self._readDomain(np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size)
                         except:
                             continue
                 elif keyword == 'SURFACE_SECTION':
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     while self._read_size < chunksize:
-                        chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+                        chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'SURFACE':
-                                self._readSurface(np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size)
+                                self._readSurface(np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size)
                         except:
                             continue
                 elif keyword == 'STATE_SECTION':
                     vlengths = {'FLOAT': 1, 'VEC3F': 3, 'MAT3FS': 6}
-                    chunksize = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                    chunksize = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                     self._read_size += 4
                     self._addStateSection()
                     while self._read_size < chunksize:
-                        chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+                        chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
                         self._read_size += 4
                         try:
                             keyword = self._lookup[self._asHexString(chunk[0])]
                             if keyword == 'TIME':
-                                self.STATE_SECTION[-1]['TIME'] = np.fromfile(self._fid,dtype=np.float32,count=2)[1]
+                                self.STATE_SECTION[-1]['TIME'] = np.fromfile(self._fid, dtype=np.float32, count=2)[1]
                                 self.TIME.append(self.STATE_SECTION[-1]['TIME'])
                                 self._read_size += 8
                             elif keyword in ['GLOBAL_DATA','MATERIAL_DATA','NODESET_DATA','DOMAIN_DATA','SURFACE_DATA']:
-                                size = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                                size = np.fromfile(self._fid, dtype=np.uint32, count=1)[0] + self._read_size
                                 self._read_size += 4
                                 while self._read_size < size:
-                                    chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]
+                                    chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)[0]
                                     self._read_size += 4
                                     try:
                                         subkeyword = self._lookup[self._asHexString(chunk)]
                                         if subkeyword == 'VARIABLE_ID':
                                             self._addStateData(keyword)
-                                            self.STATE_SECTION[-1][keyword][-1]['VARIABLE_ID'].append(np.fromfile(self._fid,dtype=np.uint32,count=2)[-1])
+                                            self.STATE_SECTION[-1][keyword][-1]['VARIABLE_ID'].append(np.fromfile(self._fid, dtype=np.uint32, count=2)[-1])
                                             self._read_size += 8
                                             itype = self.DICTIONARY[keyword][self.STATE_SECTION[-1][keyword][-1]['VARIABLE_ID'][-1]-1]['ITEM_TYPE']
                                         elif subkeyword == 'VARIABLE_DATA':
-                                            block_size = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]+self._read_size
+                                            block_size = np.fromfile(self._fid, dtype=np.uint32, count=1)[0]+self._read_size
                                             self._read_size += 4
                                             while self._read_size < block_size:
-                                                region_id = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]
-                                                region_size = np.fromfile(self._fid,dtype=np.uint32,count=1)[0]
+                                                region_id = np.fromfile(self._fid, dtype=np.uint32, count=1)[0]
+                                                region_size = np.fromfile(self._fid, dtype=np.uint32, count=1)[0]
                                                 self._read_size += 8
-                                                self.STATE_SECTION[-1][keyword][-1]['DATA'].append({'REGION_ID': region_id, 
-                                                    'DATA': np.reshape(np.fromfile(self._fid,dtype=np.float32,count=old_div(region_size,4)),(-1,vlengths[itype]))})
+                                                self.STATE_SECTION[-1][keyword][-1]['DATA'].append({
+                                                    'REGION_ID': region_id,
+                                                    'DATA': np.reshape(np.fromfile(self._fid,
+                                                                                   dtype=np.float32,
+                                                                                   count=old_div(region_size,4)),
+                                                                       (-1, vlengths[itype]))})
                                                 self._read_size += region_size
                                     except:
                                         continue
@@ -242,29 +258,29 @@ class FebPlt(object):
                 continue
         self._fid.close()
 
-    def _readDictSect(self,size,key):
-        itype = ['FLOAT','VEC3F','MAT3FS']
-        ifmt = ['NODE','ITEM','MULT']
+    def _readDictSect(self, size, key):
+        itype = ['FLOAT', 'VEC3F', 'MAT3FS']
+        ifmt = ['NODE', 'ITEM', 'MULT']
         self._read_size += 4
         while self._read_size < size:
-            chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+            chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
             self._read_size += 4
             try:
                 keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'DICTIONARY_ITEM':
                     self._addDictionaryItem(key)
                 elif keyword == 'ITEM_TYPE':
-                    self.DICTIONARY[key][-1]['ITEM_TYPE'] = itype[np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]]
+                    self.DICTIONARY[key][-1]['ITEM_TYPE'] = itype[np.fromfile(self._fid, dtype=np.uint32, count=2)[-1]]
                     self._read_size += 8
                 elif keyword == 'ITEM_FORMAT':
-                    self.DICTIONARY[key][-1]['ITEM_FORMAT'] = ifmt[np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]]
+                    self.DICTIONARY[key][-1]['ITEM_FORMAT'] = ifmt[np.fromfile(self._fid, dtype=np.uint32, count=2)[-1]]
                     self._read_size += 8
                 elif keyword == 'ITEM_NAME':
-                    np.fromfile(self._fid,dtype=np.uint32,count=1) #read a 4 byte chunk to move to char64 array
+                    np.fromfile(self._fid,dtype=np.uint32, count=1) #read a 4 byte chunk to move to char64 array
                     self._read_size += 4
                     word = ''
                     c = 0
-                    while c<64:
+                    while c < 64:
                         dmy = np.fromfile(self._fid, dtype='|S1', count=1)[0]
                         c += 1
                         if dmy != b'':
@@ -277,71 +293,84 @@ class FebPlt(object):
             except:
                 continue
 
-    def _readDomain(self,size):
+    def _readDomain(self, size):
         elmtypes = ['HEX8', 'PENTA6', 'TET4', 'QUAD4', 'TRI3', 'TRUSS2']
-        numnodes = [8,6,4,4,3,2]
+        numnodes = [8, 6, 4, 4, 3, 2]
         self._addDomain()
         self._read_size += 4
         while self._read_size < size:
-            chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+            chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
             self._read_size += 4
             try:
                 keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'ELEM_TYPE':
-                    etype = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    etype = np.fromfile(self._fid,
+                                        dtype=np.uint32,
+                                        count=2)[-1]
                     self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['ELEM_TYPE'] = elmtypes[etype]
                     self._read_size += 8
                 elif keyword == 'MAT_ID':
-                    self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['MAT_ID'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['MAT_ID'] = np.fromfile(
+                        self._fid, dtype=np.uint32, count=2)[-1]
                     self._read_size += 8
                 elif keyword == 'ELEMENTS':
-                    self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['ELEMENTS'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.DOMAIN_SECTION[-1]['DOMAIN_HEADER']['ELEMENTS'] = np.fromfile(
+                        self._fid, dtype=np.uint32, count=2)[-1]
                     self._read_size += 8
                 elif keyword == 'ELEMENT':
-                    self.DOMAIN_SECTION[-1]['ELEMENT_LIST'].append(np.fromfile(self._fid,dtype=np.uint32,count=numnodes[etype]+2)[1:])
-                    self._read_size += 4*(numnodes[etype]+2)
+                    self.DOMAIN_SECTION[-1]['ELEMENT_LIST'].append(np.fromfile(
+                        self._fid, dtype=np.uint32, count=numnodes[etype] + 2)[1:])
+                    self._read_size += 4 * (numnodes[etype] + 2)
             except:
                 continue
 
-    def _readSurface(self,size):
+    def _readSurface(self, size):
         self._addSurface()
         self._read_size += 4
         while self._read_size < size:
-            chunk = np.fromfile(self._fid,dtype=np.uint32,count=1)
+            chunk = np.fromfile(self._fid, dtype=np.uint32, count=1)
             self._read_size += 4
             try:
                 keyword = self._lookup[self._asHexString(chunk[0])]
                 if keyword == 'SURFACE_ID':
-                    self.SURFACE_SECTION[-1]['SURFACE_HEADER']['SURFACE_ID'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.SURFACE_SECTION[-1]['SURFACE_HEADER']['SURFACE_ID'] = np.fromfile(
+                        self._fid, dtype=np.uint32, count=2)[-1]
                     self._read_size += 8
                 elif keyword == 'FACETS':
-                    self.SURFACE_SECTION[-1]['SURFACE_HEADER']['FACETS'] = np.fromfile(self._fid,dtype=np.uint32,count=2)[-1]
+                    self.SURFACE_SECTION[-1]['SURFACE_HEADER']['FACETS'] = np.fromfile(
+                        self._fid, dtype=np.uint32, count=2)[-1]
                     self._read_size += 8
                 elif keyword == 'FACET':
-                    self.SURFACE_SECTION[-1]['FACET_LIST'].append(np.fromfile(self._fid,dtype=np.uint32,count=6)[1:])
+                    self.SURFACE_SECTION[-1]['FACET_LIST'].append(np.fromfile(
+                        self._fid, dtype=np.uint32, count=6)[1:])
                     self._read_size += 24
             except:
                 continue
 
-    def _addDictionaryItem(self,key):
-        self.DICTIONARY[key].append({'ITEM_TYPE': 0, 'ITEM_FORMAT': 0, 'ITEM_NAME': ''})
+    def _addDictionaryItem(self, key):
+        self.DICTIONARY[key].append(
+            {'ITEM_TYPE': 0, 'ITEM_FORMAT': 0, 'ITEM_NAME': ''})
 
     def _addMaterial(self):
         self.MATERIAL.append({'MAT_ID': 0, 'MAT_NAME': ''})
-    
+
     def _addDomain(self):
-        self.DOMAIN_SECTION.append({'DOMAIN_HEADER': {'ELEM_TYPE': 0, 'MAT_ID': 0, 'ELEMENTS': 0},
-                        'ELEMENT_LIST': []})
+        self.DOMAIN_SECTION.append(
+            {'DOMAIN_HEADER': {'ELEM_TYPE': 0, 'MAT_ID': 0, 'ELEMENTS': 0},
+             'ELEMENT_LIST': []})
     def _addSurface(self):
-        self.SURFACE_SECTION.append({'SURFACE_HEADER': {'SURFACE_ID': 0, 'FACETS': 0}, 'FACET_LIST': []})
+        self.SURFACE_SECTION.append(
+            {'SURFACE_HEADER': {'SURFACE_ID': 0, 'FACETS': 0},
+             'FACET_LIST': []})
 
     def _addStateSection(self):
         self.STATE_SECTION.append({'TIME': 0.0,
-                        'GLOBAL_DATA': [],
-                        'MATERIAL_DATA':  [],
-                        'NODESET_DATA':  [],
-                        'DOMAIN_DATA':  [],
-                        'SURFACE_DATA':  []})
+                                   'GLOBAL_DATA': [],
+                                   'MATERIAL_DATA':  [],
+                                   'NODESET_DATA':  [],
+                                   'DOMAIN_DATA':  [],
+                                   'SURFACE_DATA':  []})
+
     def _addStateData(self,key):
         self.STATE_SECTION[-1][key].append({'VARIABLE_ID': [], 'DATA': []})
 
@@ -363,11 +392,11 @@ class FebPlt(object):
         for i in range(N):
             for j in range(len(self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'])):
                 try:
-                    self.NodeData[j+1]['displacement'][i,:] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
+                    self.NodeData[j + 1]['displacement'][i, :] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
                 except:
-                    self.NodeData[j+1] = {} 
-                    self.NodeData[j+1]['displacement'] = np.zeros((N,3),dtype=np.float32)
-                    self.NodeData[j+1]['displacement'][i,:] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
+                    self.NodeData[j + 1] = {}
+                    self.NodeData[j + 1]['displacement'] = np.zeros((N, 3), dtype=np.float32)
+                    self.NodeData[j + 1]['displacement'][i, :] = self.STATE_SECTION[i]['NODESET_DATA'][0]['DATA'][0]['DATA'][j]
 
             for j in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'])):
                 vname = self.DICTIONARY['DOMAIN_DATA'][j]['ITEM_NAME']
@@ -375,34 +404,35 @@ class FebPlt(object):
                 if vformat == 'ITEM':
                     for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
                         dat = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['DATA']
-                        m = mapping[k][vformat]
-                        M,L = dat.shape    #rows in dat
+                        rid = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['REGION_ID']
+                        m = mapping[rid - 1][vformat]
+                        M, L = dat.shape    #rows in dat
                         for l in range(M):
                             try:
-                                self.ElementData[m[l]][vname][i,:] = dat[l,:]
+                                self.ElementData[m[l]][vname][i, :] = dat[l, :]
                             except:
                                 try:
-                                    self.ElementData[m[l]][vname] = np.zeros((N,L),dtype=np.float32)
+                                    self.ElementData[m[l]][vname] = np.zeros((N, L), dtype=np.float32)
                                 except:
                                     self.ElementData[m[l]] = {}
-                                    self.ElementData[m[l]][vname] = np.zeros((N,L),dtype=np.float32)
-                                self.ElementData[m[l]][vname][i,:] =  dat[l,:]
+                                    self.ElementData[m[l]][vname] = np.zeros((N, L), dtype=np.float32)
+                                self.ElementData[m[l]][vname][i, :] = dat[l, :]
                 elif vformat == 'NODE':
                     for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
                         dat = self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'][k]['DATA']
                         m = mapping[k][vformat]
-                        M,L = dat.shape    #rows in dat
+                        M, L = dat.shape    #rows in dat
                         for l in range(M):
-                            n = m[l]+1
+                            n = m[l] + 1
                             try:
-                                self.NodeData[n][vname][i,:] = dat[l,:]
+                                self.NodeData[n][vname][i, :] = dat[l, :]
                             except:
                                 try:
-                                    self.NodeData[n][vname] = np.zeros((N,L),dtype=np.float32)
+                                    self.NodeData[n][vname] = np.zeros((N, L), dtype=np.float32)
                                 except:
                                     self.NodeData[n] = {}
-                                    self.NodeData[n][vname] = np.zeros((N,L),dtype=np.float32)
-                                self.NodeData[n][vname][i,:] =  dat[l,:]
+                                    self.NodeData[n][vname] = np.zeros((N, L), dtype=np.float32)
+                                self.NodeData[n][vname][i, :] =  dat[l, :]
                 elif vformat == 'MULT':
                     accessed = {}
                     for k in range(len(self.STATE_SECTION[i]['DOMAIN_DATA'][j]['DATA'])):
@@ -410,26 +440,24 @@ class FebPlt(object):
                         m = mapping[k][vformat]
                         M,L = dat.shape    #rows in dat
                         for l in range(M):
-                            n = m[l]+1
+                            n = m[l] + 1
                             try:
-                                self.NodeData[n][vname][i,:] = self.NodeData[n][vname][i,:] + dat[l,:]
+                                self.NodeData[n][vname][i, :] = self.NodeData[n][vname][i, :] + dat[l, :]
                                 try:
                                     accessed[n] += 1
                                 except:
                                     accessed[n] = 1
                             except:
                                 try:
-                                    self.NodeData[n][vname] = np.zeros((N,L),dtype=np.float32)
+                                    self.NodeData[n][vname] = np.zeros((N, L), dtype=np.float32)
                                 except:
                                     self.NodeData[n] = {}
-                                    self.NodeData[n][vname] = np.zeros((N,L),dtype=np.float32)
-                                self.NodeData[n][vname][i,:] = self.NodeData[n][vname][i,:] + dat[l,:]
+                                    self.NodeData[n][vname] = np.zeros((N, L), dtype=np.float32)
+                                self.NodeData[n][vname][i, :] = self.NodeData[n][vname][i, :] + dat[l, :]
                                 accessed[n] = 1
                     for nid in list(self.NodeData.keys()):
                         try:
-                            self.NodeData[nid][vname][i,:] = old_div(self.NodeData[nid][vname][i,:],accessed[nid])
+                            self.NodeData[nid][vname][i, :] = old_div(
+                                self.NodeData[nid][vname][i, :], accessed[nid])
                         except:
                             continue
-                    
-                
-
