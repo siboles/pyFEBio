@@ -1,3 +1,6 @@
+# NO LONGER MAINTAINED -- FOR AN ACTIVELY SUPPORTED ALTERNATIVE SEE:
+https://github.com/febiosoftware/pyfebio
+
 # pyFEBio #
 A Python API for FEBio
 ## Installation ##
